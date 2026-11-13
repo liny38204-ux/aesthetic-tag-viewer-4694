@@ -1,0 +1,213 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>4694 调色台 · 美学标签浏览器</title>
+<meta name="description" content="4,694 条视频美学标签的浏览器：明度、反差、饱和度、冷暖、配色对比度、构图，按 20%/50%/80% 三帧判断。">
+<meta property="og:title" content="4694 调色台 · 美学标签浏览器">
+<meta property="og:description" content="4,694 条视频美学伪标签的可交互浏览：按调色四组与构图筛选，点开看三帧依据。">
+<meta name="theme-color" content="#eceff2">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%232f56c8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+/* Layout: a colourist's grading console. Left rail = four 3-way tone groups drawn as their own swatches + composition switches; right = contact sheet of 50% frames. */
+:root{
+  --paper:#eceff2; --panel:#f8f9fb; --ink:#1a2027; --muted:#5f6a76; --rule:#d3d9e0;
+  --accent:#2f56c8; --accent-soft:#dfe6fa; --on-accent:#fff;
+  --warm:#d9873a; --cool:#3b82b8; --neutral:#9aa3ac;
+  --f-text:"IBM Plex Sans","Noto Sans SC",system-ui,-apple-system,"PingFang SC",sans-serif;
+  --f-cjk:"Noto Sans SC","IBM Plex Sans","PingFang SC",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;--paper:#14181d;--panel:#1c2128;--ink:#e6eaef;--muted:#99a4b0;--rule:#2d343d;
+  --accent:#7f9df0;--accent-soft:#25304c;--on-accent:#0f1420;--neutral:#79838d}}
+:root[data-theme="dark"]{
+  color-scheme:dark;--paper:#14181d;--panel:#1c2128;--ink:#e6eaef;--muted:#99a4b0;--rule:#2d343d;
+  --accent:#7f9df0;--accent-soft:#25304c;--on-accent:#0f1420;--neutral:#79838d}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:14px/1.5 var(--f-text);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:1480px;margin:0 auto;display:grid;gap:20px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 20px}
+h1{font:700 22px/1.2 var(--f-cjk);margin:0;letter-spacing:.01em;text-wrap:balance}
+.sub{color:var(--muted);font-size:13px;max-width:72ch}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.main{display:grid;grid-template-columns:330px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.main{grid-template-columns:1fr}}
+.rail{background:var(--panel);border:1px solid var(--rule);border-radius:var(--r);padding:16px;display:grid;gap:18px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+@media (max-width:860px){.rail{position:static}}
+.grp{display:grid;gap:7px}
+.grp h2{margin:0;font:600 11px/1 var(--f-text);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between}
+.grp h2 b{font-family:var(--f-cjk);font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink);font-size:13px}
+.bar{display:flex;height:10px;border-radius:3px;overflow:hidden;background:var(--rule)}
+.bar i{display:block;height:100%}
+.opts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.opts.five{grid-template-columns:repeat(3,1fr)}
+.gnote{font-size:11px;color:var(--muted);font-family:var(--f-cjk)}
+.opt{all:unset;cursor:pointer;border:1px solid var(--rule);border-radius:5px;padding:6px 7px;display:grid;gap:2px;background:var(--paper);min-width:0}
+.opt:hover{border-color:var(--muted)}
+.opt:focus-visible,.seg button:focus-visible,.btn:focus-visible,.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.opt .top{display:flex;align-items:center;gap:6px;font:500 12px/1.2 var(--f-cjk)}
+.opt .n{font:500 12px/1.2 var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.sw{width:14px;height:14px;border-radius:3px;flex:none;border:1px solid rgba(127,127,127,.35)}
+.code{font:400 10px/1 var(--f-mono);color:var(--muted)}
+.comp{display:grid;gap:6px}
+.crow{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.crow span{font:500 13px/1.2 var(--f-cjk)}
+.crow em{font:normal 11px var(--f-mono);color:var(--muted);margin-left:6px}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:5px;overflow:hidden;flex:none}
+.seg button{all:unset;cursor:pointer;font:500 11px/1 var(--f-cjk);padding:6px 9px;color:var(--muted)}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.btn{all:unset;cursor:pointer;font:500 12px var(--f-cjk);color:var(--accent);padding:4px 0}
+.content{display:grid;gap:14px;min-width:0}
+.status{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;font-size:13px}
+.status .big{font:600 20px/1 var(--f-mono);font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.fchip{all:unset;cursor:pointer;font:500 12px/1 var(--f-cjk);border:1px solid var(--accent);color:var(--accent);border-radius:20px;padding:5px 9px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.card{all:unset;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr);gap:6px;min-width:0;align-content:start}
+.thumb{display:block;aspect-ratio:16/9;width:100%;max-width:100%;height:auto;object-fit:contain;border-radius:4px;background-color:#2a2f36}
+.frames{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.frames figure{margin:0;display:grid;gap:3px}
+.frames figcaption{font:400 11px var(--f-mono);color:var(--muted)}
+@media (max-width:560px){.frames{grid-template-columns:1fr}}
+.card:hover .thumb{outline:2px solid var(--muted);outline-offset:1px}
+.tags{display:flex;flex-wrap:wrap;gap:4px}
+.t{display:inline-flex;align-items:center;gap:4px;font:500 11px/1 var(--f-cjk);padding:3px 5px;border-radius:3px;background:var(--panel);border:1px solid var(--rule);white-space:nowrap}
+.t .sw{width:9px;height:9px;border-radius:2px}
+.t.c{border-color:var(--accent);color:var(--accent)}
+.t.na{color:var(--muted);border-style:dashed}
+.meta{display:flex;justify-content:space-between;gap:6px;font:400 11px/1.2 var(--f-mono);color:var(--muted);min-width:0}
+.meta span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.more{justify-self:center;border:1px solid var(--rule);background:var(--panel);border-radius:5px;padding:8px 16px;font:500 13px var(--f-cjk);color:var(--ink);cursor:pointer}
+.empty{padding:40px 0;color:var(--muted);text-align:center}
+dialog{border:1px solid var(--rule);border-radius:var(--r);background:var(--panel);color:var(--ink);padding:0;width:min(1200px,calc(100vw - 32px));max-height:calc(100vh - 32px)}
+dialog::backdrop{background:rgba(10,14,20,.6)}
+.dlg{display:grid;gap:14px;padding:16px}
+.dlg .thumb{border-radius:4px}
+.dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px;margin:0}
+.dl dt{color:var(--muted)}
+.dl dd{margin:0;display:flex;flex-wrap:wrap;gap:4px}
+.note{font-size:12px;color:var(--muted);max-width:72ch}
+.close{justify-self:end}
+@media (prefers-reduced-motion:no-preference){.thumb{transition:outline-color .12s}}
+</style>
+<div class="wrap">
+  <header>
+    <h1>4694 条美学标签</h1>
+    <div class="sub">数据来自 <span class="mono">aesthetic_center4821_complete_20261112/release/all4694_manifest.jsonl</span>。缩略图为 50% 处采样帧。所有标签都是 20%、50%、80% 三帧的视觉伪标签，不是整段视频的人工真值。</div>
+  </header>
+  <p class="note" id="brightness-review-overlay-20261112">此页保留 4,694 条历史展示范围；本轮 223 条明度修订已同步。<b>查看最新 4,588 条有效数据及全部标签</b>。</p><div class="main">
+    <aside class="rail" aria-label="筛选">
+      <div id="groups" style="display:grid;gap:18px"></div>
+      <div class="grp">
+        <h2>构图 <b></b></h2>
+        <div class="comp" id="comp"></div>
+      </div>
+      <div class="grp">
+        <h2>范围 <b></b></h2>
+        <div class="comp" id="scope"></div>
+      </div>
+      <button class="btn" id="reset" type="button">清除全部筛选</button>
+    </aside>
+    <section class="content">
+      <div class="status"><span><span class="big" id="count">0</span> 条符合</span><span class="chips" id="chips"></span></div>
+      <div class="grid" id="grid"></div>
+      <button class="more" id="more" type="button">显示更多</button>
+    </section>
+  </div>
+</div>
+<dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
+<script src="rows.js"></script>
+<script>
+(function(){
+const R=window.ROWS||[];
+const G=[
+ {k:'b',i:4,name:'明度',opts:[['L01','暗调','#2b2f36'],['L02','普通','#8a9099'],['L03','亮调','#eef0f2']]},
+ {k:'c',i:5,name:'明暗反差',opts:[['L04','低反差','linear-gradient(90deg,#8d939b,#a7adb4)'],['L05','普通','linear-gradient(90deg,#5d636b,#c3c8ce)'],['L06','高反差','linear-gradient(90deg,#111418,#f4f5f7)']]},
+ {k:'s',i:6,name:'饱和度',opts:[['P02','低饱和','#9d9890'],['P03','普通','#5f9a74'],['P04','高饱和','#e0322f']]},
+ {k:'t',i:7,name:'冷暖',opts:[['P05','暖','var(--warm)'],['P06','冷','var(--cool)'],['P07','中性','var(--neutral)']]},
+ {k:'p',i:16,name:'配色对比度',note:'旧 3999 批标注；新增 891 条未标',opts:[['PC_L','低','linear-gradient(90deg,#3f7fa8,#6fa6c9)'],['PC_M','中','linear-gradient(90deg,#5f9a74,#c9a24a)'],['PC_H','高','linear-gradient(90deg,#e07a2c,#2f6fd0)'],['PC_NA','不适用','#b8bec5'],['','未标注','repeating-linear-gradient(45deg,#c9ced4 0 3px,transparent 3px 6px)']]}
+];
+const NAME={};G.forEach(g=>g.opts.forEach(o=>{if(o[0])NAME[o[0]]={n:o[1],sw:o[2],g:g.name}}));
+const C=[['center',9,'中心构图','COMP_CENTER'],['lead',10,'引导线','COMP_LEAD'],['sym',11,'对称','COMP_SYM'],['imb',12,'失衡','COMP_IMBALANCE']];
+const S=[['split',2,'划分',[['train','train'],['dev','dev'],['test','test'],['unassigned','未划分']]],['src',3,'来源',[['VADB','VADB'],['OpenVid','OpenVid'],['SJTU','SJTU']]]];
+const st={g:{b:new Set,c:new Set,s:new Set,t:new Set,p:new Set},c:{},split:'',src:'',usable:false};
+let shown=120,cur=[];
+const $=id=>document.getElementById(id);
+function pass(r,skip){
+  for(const g of G){if(g.k!==skip&&st.g[g.k].size&&!st.g[g.k].has(r[g.i]||''))return false}
+  for(const c of C){const v=st.c[c[0]];if(v!==undefined&&r[c[1]]!==v)return false}
+  if(st.split&&r[2]!==st.split)return false;
+  if(st.src&&r[3]!==st.src)return false;
+  if(st.usable&&!r[14])return false;
+  return true}
+function buildRail(){
+  $('groups').innerHTML=G.map(g=>`<div class="grp" data-g="${g.k}"><h2>${g.name}<b class="mono" id="h_${g.k}"></b></h2>${g.note?`<div class="gnote">${g.note}</div>`:''}<div class="bar" id="bar_${g.k}"></div><div class="opts">${g.opts.map(o=>`<button type="button" class="opt" id="o_${g.k}_${o[0]||'none'}" data-g="${g.k}" data-v="${o[0]}" aria-pressed="false"><span class="top"><span class="sw" style="background:${o[2]}"></span>${o[1]}</span><span class="code">${o[0]||'—'}</span><span class="n" id="n_${g.k}_${o[0]||'none'}"></span></button>`).join('')}</div></div>`).join('');
+  $('comp').innerHTML=C.map(c=>`<div class="crow"><span>${c[2]}<em id="cn_${c[0]}"></em></span><span class="seg" role="group" aria-label="${c[2]}">${[['','全部'],[1,'是'],[0,'否']].map(x=>`<button type="button" id="c_${c[0]}_${x[0]}" data-c="${c[0]}" data-v="${x[0]}" aria-pressed="${x[0]===''}">${x[1]}</button>`).join('')}</span></div>`).join('');
+  $('scope').innerHTML=S.map(s=>`<div class="crow"><span>${s[2]}</span><span class="seg" role="group" aria-label="${s[2]}">${[['','全部'],...s[3]].map(x=>`<button type="button" id="s_${s[0]}_${x[0]}" data-s="${s[0]}" data-v="${x[0]}" aria-pressed="${x[0]===''}">${x[1]}</button>`).join('')}</span></div>`).join('')+
+  `<div class="crow"><span>只看可用 4678</span><span class="seg"><button type="button" id="u_0" data-u="0" aria-pressed="true">否</button><button type="button" id="u_1" data-u="1" aria-pressed="false">是</button></span></div>`;
+}
+function counts(){
+  for(const g of G){
+    const base=R.filter(r=>pass(r,g.k)),tot=base.length;const m={};let na=0;
+    const hasNone=g.opts.some(o=>o[0]==='');base.forEach(r=>{const v=r[g.i]||'';if(v||hasNone)m[v]=(m[v]||0)+1;else na++});
+    $('bar_'+g.k).innerHTML=g.opts.map(o=>`<i style="width:${tot?(m[o[0]]||0)/tot*100:0}%;background:${o[2]}" title="${o[1]} ${m[o[0]]||0}"></i>`).join('');
+    g.opts.forEach(o=>{const n=m[o[0]]||0;$('n_'+g.k+'_'+(o[0]||'none')).textContent=`${n} · ${tot?(n/tot*100).toFixed(1):'0.0'}%`});
+    $('h_'+g.k).textContent=na?`${na} 条无标签`:'';
+  }
+  for(const c of C){let p=0,na=0;cur.forEach(r=>{if(r[c[1]]===1)p++;else if(r[c[1]]==null)na++});$('cn_'+c[0]).textContent=`${p} 是`+(na?` · ${na} 空`:'')}
+}
+function tagHtml(r){
+  let h=G.map(g=>{const v=r[g.i];if(!v)return `<span class="t na">${g.k==='p'?'配色未标':g.name+'空'}</span>`;const o=NAME[v];return `<span class="t" title="${g.name} ${v}"><span class="sw" style="background:${o.sw}"></span>${g.k==='p'?'配色'+o.n:o.n}</span>`}).join('');
+  C.forEach(c=>{if(r[c[1]]===1)h+=`<span class="t c">${c[2]}</span>`});
+  if(r[8])h+=`<span class="t c">近无彩 P01</span>`;
+  return h}
+const thumb=i=>`<img class="thumb" src="thumbs/${i}.webp" loading="lazy" decoding="async" alt="">`;
+function render(){
+  cur=[];R.forEach((r,i)=>{if(pass(r))cur.push(i)});
+  const rows=cur.map(i=>R[i]);const keep=cur;cur=rows;
+  $('count').textContent=rows.length;counts();
+  const g=$('grid');
+  if(!rows.length){g.innerHTML='<div class="empty">没有符合这些条件的样本。去掉一个筛选条件再试。</div>';$('more').hidden=true;return}
+  g.innerHTML=keep.slice(0,shown).map(i=>{const r=R[i];return `<button type="button" class="card" data-i="${i}">${thumb(i)}<span class="tags">${tagHtml(r)}</span><span class="meta"><span>${r[1]||r[0]}</span><span>${r[2]==='unassigned'?'未划分':r[2]}</span></span></button>`}).join('');
+  $('more').hidden=shown>=rows.length;$('more').textContent=`显示更多（还有 ${rows.length-Math.min(shown,rows.length)} 条）`;
+  chips()}
+function chips(){
+  const a=[];G.forEach(g=>st.g[g.k].forEach(v=>a.push([`${g.name}：${v?NAME[v].n:'未标注'}`,()=>st.g[g.k].delete(v)])));
+  C.forEach(c=>{const v=st.c[c[0]];if(v!==undefined)a.push([`${c[2]}：${v?'是':'否'}`,()=>{delete st.c[c[0]]}])});
+  if(st.split)a.push([`划分：${st.split}`,()=>st.split='']);if(st.src)a.push([`来源：${st.src}`,()=>st.src='']);if(st.usable)a.push(['可用 4678',()=>st.usable=false]);
+  $('chips').innerHTML=a.map((x,j)=>`<button type="button" class="fchip" data-j="${j}">${x[0]} ×</button>`).join('');
+  $('chips').onclick=e=>{const b=e.target.closest('.fchip');if(!b)return;a[+b.dataset.j][1]();sync();shown=120;render()}}
+function sync(){
+  document.querySelectorAll('.opt').forEach(b=>b.setAttribute('aria-pressed',st.g[b.dataset.g].has(b.dataset.v)));
+  document.querySelectorAll('[data-c]').forEach(b=>{const v=st.c[b.dataset.c];b.setAttribute('aria-pressed',b.dataset.v===''?v===undefined:+b.dataset.v===v)});
+  document.querySelectorAll('[data-s]').forEach(b=>b.setAttribute('aria-pressed',st[b.dataset.s]===b.dataset.v));
+  document.querySelectorAll('[data-u]').forEach(b=>b.setAttribute('aria-pressed',(b.dataset.u==='1')===st.usable))}
+document.addEventListener('click',e=>{
+  const o=e.target.closest('.opt');if(o){const s=st.g[o.dataset.g];s.has(o.dataset.v)?s.delete(o.dataset.v):s.add(o.dataset.v)}
+  const c=e.target.closest('[data-c]');if(c){if(c.dataset.v==='')delete st.c[c.dataset.c];else st.c[c.dataset.c]=+c.dataset.v}
+  const s=e.target.closest('[data-s]');if(s)st[s.dataset.s]=s.dataset.v;
+  const u=e.target.closest('[data-u]');if(u)st.usable=u.dataset.u==='1';
+  if(o||c||s||u){sync();shown=120;render()}
+  const card=e.target.closest('.card');if(card)openDlg(+card.dataset.i)});
+$('more').onclick=()=>{shown+=240;render()};
+$('reset').onclick=()=>{G.forEach(g=>st.g[g.k].clear());st.c={};st.split='';st.src='';st.usable=false;sync();shown=120;render()};
+function openDlg(i){
+  const r=R[i];const lab=v=>v===1?'是':v===0?'否':'未标注';
+  $('dlgBody').innerHTML=`<div class="frames">${[0,1,2].map(k=>`<figure><img class="thumb" src="frames/${r[15]}_${k}.webp" alt="${[20,50,80][k]}% 帧" onerror="this.src='thumbs/${i}.webp'"><figcaption>${[20,50,80][k]}% 帧</figcaption></figure>`).join('')}</div>
+  <dl class="dl"><dt>ID</dt><dd class="mono">${r[0]}</dd><dt>编号</dt><dd class="mono">${r[1]} · ${r[3]} · ${r[2]==='unassigned'?'未划分':r[2]}${r[14]?'':' · 质量受限'}</dd>
+  ${G.map(g=>`<dt>${g.name}</dt><dd>${r[g.i]?`<span class="t"><span class="sw" style="background:${NAME[r[g.i]].sw}"></span>${NAME[r[g.i]].n}</span><span class="code" style="align-self:center">${r[g.i]}</span>`:`<span class="t na">${g.k==='p'?'未标注（新增批次）':'无标签'}</span>`}</dd>`).join('')}
+  ${C.map(c=>`<dt>${c[2]}</dt><dd>${lab(r[c[1]])} <span class="code" style="align-self:center">${c[3]}</span></dd>`).join('')}
+  <dt>近无彩</dt><dd>${r[8]?'是':'否'} <span class="code" style="align-self:center">P01 像素算子</span></dd>
+  ${r[13]?`<dt>标注依据</dt><dd>${r[13].replace(/</g,'&lt;')}</dd>`:''}${r[17]?`<dt>配色依据</dt><dd>${r[17].replace(/</g,'&lt;')}</dd>`:''}</dl>
+  <p class="note">标签依据上面 20%、50%、80% 三帧判断。</p>
+  <button type="button" class="more close" id="dlgClose">关闭</button>`;
+  $('dlgClose').onclick=()=>$('dlg').close();$('dlg').showModal()}
+$('dlg').addEventListener('click',e=>{if(e.target===$('dlg'))$('dlg').close()});
+buildRail();render();
+})();
+</script>
